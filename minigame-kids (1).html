@@ -1,0 +1,2709 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>🎮 Mini Game For Kids</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+/* ===== CSS VARIABLES ===== */
+:root {
+  --bg1: #ff9de2;
+  --bg2: #a8edea;
+  --bg3: #fed6e3;
+  --bg4: #ffecd2;
+  --primary: #ff6b9d;
+  --secondary: #c084fc;
+  --accent: #38bdf8;
+  --success: #4ade80;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --text-dark: #1e1b4b;
+  --text-mid: #4c1d95;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(255,255,255,0.9);
+  --shadow: rgba(168,85,247,0.25);
+  --header-bg: rgba(255,255,255,0.75);
+  --glass: rgba(255,255,255,0.5);
+  --popup-bg: rgba(255,255,255,0.97);
+  --btn-radius: 18px;
+  --card-radius: 24px;
+  --transition: 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+[data-theme="dark"] {
+  --bg1: #1a1a2e;
+  --bg2: #16213e;
+  --bg3: #0f3460;
+  --bg4: #1a1a2e;
+  --card-bg: rgba(30,27,75,0.75);
+  --card-border: rgba(168,85,247,0.3);
+  --shadow: rgba(168,85,247,0.4);
+  --header-bg: rgba(15,15,40,0.85);
+  --glass: rgba(20,20,50,0.6);
+  --popup-bg: rgba(20,20,55,0.98);
+  --text-dark: #e0e7ff;
+  --text-mid: #c4b5fd;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 65%, var(--bg4) 100%);
+  background-size: 400% 400%;
+  animation: bgShift 12s ease infinite;
+  overflow-x: hidden;
+  color: var(--text-dark);
+  transition: background 0.5s;
+}
+@keyframes bgShift {
+  0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
+}
+
+/* ===== LOADING SCREEN ===== */
+#loading-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, #ff9de2 0%, #a8edea 50%, #ffecd2 100%);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+}
+.loading-content { text-align: center; z-index: 2; }
+.loading-logo {
+  font-size: 5rem;
+  animation: bounce 0.8s infinite alternate;
+  display: block; margin-bottom: 12px;
+  filter: drop-shadow(0 0 20px rgba(255,107,157,0.8));
+}
+.loading-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  color: #4c1d95;
+  text-shadow: 3px 3px 0 rgba(255,255,255,0.5);
+  margin-bottom: 24px;
+}
+.loading-bar {
+  width: 280px; height: 16px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 99px; overflow: hidden;
+  margin: 0 auto 12px;
+  border: 2px solid rgba(255,255,255,0.6);
+}
+.loading-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b9d, #c084fc, #38bdf8);
+  border-radius: 99px;
+  width: 0%;
+  animation: fillBar 2.5s ease forwards;
+}
+@keyframes fillBar { to { width: 100%; } }
+.loading-text {
+  font-size: 1rem; color: #4c1d95; font-weight: 700;
+  animation: pulse 1s infinite;
+}
+.loading-floats {
+  position: absolute; inset: 0; pointer-events: none;
+  overflow: hidden;
+}
+.loading-floats span {
+  position: absolute; font-size: 2rem;
+  animation: floatRand 4s ease-in-out infinite;
+  opacity: 0.6;
+}
+.loading-floats span:nth-child(1){left:5%;top:10%;animation-delay:0s;}
+.loading-floats span:nth-child(2){left:20%;top:80%;animation-delay:.5s;}
+.loading-floats span:nth-child(3){left:40%;top:15%;animation-delay:1s;}
+.loading-floats span:nth-child(4){left:60%;top:70%;animation-delay:1.5s;}
+.loading-floats span:nth-child(5){left:75%;top:20%;animation-delay:.3s;}
+.loading-floats span:nth-child(6){left:85%;top:60%;animation-delay:.8s;}
+.loading-floats span:nth-child(7){left:10%;top:50%;animation-delay:1.2s;}
+.loading-floats span:nth-child(8){left:90%;top:40%;animation-delay:.6s;}
+@keyframes floatRand {
+  0%,100%{transform:translateY(0) rotate(0deg);}
+  50%{transform:translateY(-30px) rotate(15deg);}
+}
+
+/* ===== UTILITIES ===== */
+.hidden { display: none !important; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== HEADER ===== */
+.main-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--header-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 2px solid rgba(255,255,255,0.6);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 4px 24px var(--shadow);
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.logo-emoji { font-size: 2rem; animation: bounce 2s infinite; }
+.logo-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  color: var(--primary);
+  text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+}
+.header-right { display: flex; gap: 8px; }
+.icon-btn {
+  background: var(--glass);
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 50%; width: 44px; height: 44px;
+  font-size: 1.2rem; cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-btn:hover { transform: scale(1.15) rotate(10deg); box-shadow: 0 0 16px var(--shadow); }
+
+/* ===== FLOATING BACKGROUND ===== */
+.float-bg {
+  position: fixed; inset: 0; pointer-events: none;
+  overflow: hidden; z-index: 0;
+}
+.float-bg span {
+  position: absolute; font-size: 1.8rem;
+  opacity: 0.12; animation: floatBg 8s ease-in-out infinite;
+}
+.float-bg span:nth-child(1){left:3%;top:15%;animation-delay:0s;}
+.float-bg span:nth-child(2){left:12%;top:70%;animation-delay:1s;}
+.float-bg span:nth-child(3){left:25%;top:35%;animation-delay:2s;}
+.float-bg span:nth-child(4){left:38%;top:80%;animation-delay:.5s;}
+.float-bg span:nth-child(5){left:55%;top:10%;animation-delay:1.5s;}
+.float-bg span:nth-child(6){left:65%;top:60%;animation-delay:2.5s;}
+.float-bg span:nth-child(7){left:78%;top:25%;animation-delay:.8s;}
+.float-bg span:nth-child(8){left:88%;top:75%;animation-delay:1.8s;}
+.float-bg span:nth-child(9){left:18%;top:50%;animation-delay:3s;}
+.float-bg span:nth-child(10){left:48%;top:45%;animation-delay:.2s;}
+.float-bg span:nth-child(11){left:70%;top:85%;animation-delay:2.2s;}
+.float-bg span:nth-child(12){left:92%;top:40%;animation-delay:1.3s;}
+@keyframes floatBg {
+  0%,100%{transform:translateY(0) rotate(0deg);}
+  33%{transform:translateY(-20px) rotate(5deg);}
+  66%{transform:translateY(10px) rotate(-5deg);}
+}
+
+/* ===== HOME PAGE ===== */
+#page-home { position: relative; z-index: 1; padding: 20px; }
+.hero-section { text-align: center; padding: 32px 0 24px; }
+.hero-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: var(--text-dark);
+  text-shadow: 3px 3px 0 rgba(255,255,255,0.4);
+  animation: bounceIn 0.8s var(--transition);
+  margin-bottom: 8px;
+}
+.hero-sub {
+  font-size: 1.1rem; color: var(--text-mid);
+  font-weight: 700; letter-spacing: .5px;
+}
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+.game-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid var(--card-border);
+  border-radius: var(--card-radius);
+  padding: 28px 20px 24px;
+  text-align: center;
+  cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: var(--transition);
+  box-shadow: 0 8px 32px var(--shadow);
+  animation: cardIn 0.6s var(--transition) backwards;
+}
+.game-card:nth-child(1){animation-delay:.05s;}
+.game-card:nth-child(2){animation-delay:.1s;}
+.game-card:nth-child(3){animation-delay:.15s;}
+.game-card:nth-child(4){animation-delay:.2s;}
+.game-card:nth-child(5){animation-delay:.25s;}
+.game-card:nth-child(6){animation-delay:.3s;}
+.game-card:nth-child(7){animation-delay:.35s;}
+.game-card:nth-child(8){animation-delay:.4s;}
+.game-card:nth-child(9){animation-delay:.45s;}
+.game-card:nth-child(10){animation-delay:.5s;}
+@keyframes cardIn {
+  from{opacity:0;transform:translateY(40px) scale(0.85);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.game-card:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 20px 50px var(--shadow);
+  border-color: var(--primary);
+}
+.game-card:active { transform: scale(0.97); }
+.card-icon {
+  font-size: 3.2rem;
+  display: block; margin-bottom: 10px;
+  animation: bounce 2s infinite;
+  filter: drop-shadow(0 4px 8px rgba(168,85,247,.3));
+}
+.game-card h3 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.15rem; color: var(--text-dark); margin-bottom: 4px;
+}
+.game-card p { font-size: .85rem; color: var(--text-mid); font-weight: 600; }
+.card-glow {
+  position: absolute; inset: 0; border-radius: var(--card-radius);
+  background: linear-gradient(135deg, rgba(255,107,157,.15), rgba(192,132,252,.15));
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+}
+.game-card:hover .card-glow { opacity: 1; }
+
+/* ===== GAME PAGE ===== */
+#page-game {
+  position: relative; z-index: 1;
+  padding: 16px;
+  min-height: calc(100vh - 70px);
+}
+.back-btn {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: var(--btn-radius);
+  padding: 10px 20px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800; font-size: 1rem;
+  color: var(--text-dark); cursor: pointer;
+  margin-bottom: 16px;
+  transition: var(--transition);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.back-btn:hover { transform: translateX(-4px); background: var(--primary); color: white; }
+#game-container { max-width: 800px; margin: 0 auto; }
+
+/* ===== COMMON GAME STYLES ===== */
+.game-wrap {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid var(--card-border);
+  border-radius: var(--card-radius);
+  padding: 24px;
+  box-shadow: 0 12px 40px var(--shadow);
+  animation: cardIn 0.5s var(--transition);
+}
+.game-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  text-align: center; color: var(--primary);
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 0 rgba(255,255,255,0.3);
+}
+.game-subtitle { text-align: center; color: var(--text-mid); font-weight: 700; margin-bottom: 16px; }
+.game-stats {
+  display: flex; gap: 12px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 16px;
+}
+.stat-box {
+  background: rgba(255,255,255,0.5);
+  border: 2px solid rgba(255,255,255,0.8);
+  border-radius: 14px; padding: 8px 16px;
+  text-align: center; min-width: 80px;
+  backdrop-filter: blur(8px);
+}
+[data-theme="dark"] .stat-box { background: rgba(255,255,255,0.08); }
+.stat-label { font-size: .7rem; font-weight: 800; color: var(--text-mid); text-transform: uppercase; letter-spacing: .5px; }
+.stat-val { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--text-dark); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white; border: none;
+  border-radius: var(--btn-radius);
+  padding: 12px 28px; font-family: 'Nunito', sans-serif;
+  font-weight: 900; font-size: 1rem; cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 16px rgba(255,107,157,.4);
+  letter-spacing: .3px;
+}
+.btn-primary:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 24px rgba(255,107,157,.6); }
+.btn-primary:active { transform: scale(0.97); }
+.btn-secondary {
+  background: var(--glass);
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: var(--btn-radius);
+  padding: 12px 28px; font-family: 'Nunito', sans-serif;
+  font-weight: 900; font-size: 1rem;
+  color: var(--text-dark); cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+}
+.btn-secondary:hover { transform: translateY(-3px); background: var(--secondary); color: white; }
+.level-select {
+  display: flex; gap: 10px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 18px;
+}
+.level-btn {
+  background: var(--glass);
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 12px; padding: 8px 20px;
+  font-family: 'Nunito', sans-serif; font-weight: 800;
+  cursor: pointer; color: var(--text-dark);
+  transition: var(--transition); font-size: .95rem;
+  backdrop-filter: blur(8px);
+}
+.level-btn:hover, .level-btn.active {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white; border-color: transparent;
+  transform: translateY(-2px); box-shadow: 0 6px 20px var(--shadow);
+}
+
+/* ===== MEMORY GAME ===== */
+.memory-grid {
+  display: grid; gap: 10px;
+  justify-content: center; margin: 16px auto;
+}
+.mem-card {
+  width: 80px; height: 80px;
+  perspective: 600px; cursor: pointer;
+}
+@media(max-width:480px){.mem-card{width:65px;height:65px;}}
+.mem-inner {
+  width: 100%; height: 100%;
+  position: relative; transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(.4,2,.6,1);
+  border-radius: 14px;
+}
+.mem-card.flipped .mem-inner { transform: rotateY(180deg); }
+.mem-front, .mem-back {
+  position: absolute; inset: 0;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.mem-front {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 4px 12px var(--shadow);
+  font-size: 1.8rem;
+}
+.mem-back {
+  background: rgba(255,255,255,0.85);
+  transform: rotateY(180deg);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+[data-theme="dark"] .mem-back { background: rgba(30,27,75,0.9); }
+.mem-card.matched .mem-back {
+  background: linear-gradient(135deg, #4ade80, #22d3ee);
+  animation: matchPulse 0.5s var(--transition);
+}
+@keyframes matchPulse {
+  0%{transform:rotateY(180deg) scale(1);}
+  50%{transform:rotateY(180deg) scale(1.15);}
+  100%{transform:rotateY(180deg) scale(1);}
+}
+
+/* ===== TIC TAC TOE ===== */
+.ttt-board {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 10px; max-width: 300px; margin: 16px auto;
+}
+.ttt-cell {
+  aspect-ratio: 1; background: rgba(255,255,255,0.5);
+  border: 3px solid rgba(255,255,255,0.8);
+  border-radius: 16px; cursor: pointer;
+  font-size: 2.5rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+}
+[data-theme="dark"] .ttt-cell { background: rgba(255,255,255,0.08); }
+.ttt-cell:hover:not(.taken) {
+  background: rgba(255,107,157,.2);
+  transform: scale(1.05);
+  border-color: var(--primary);
+}
+.ttt-cell.win-cell { background: linear-gradient(135deg,#4ade80,#22d3ee); animation: matchPulse 0.5s ease; }
+.ttt-cell span { animation: popIn 0.3s var(--transition); }
+@keyframes popIn { from{transform:scale(0) rotate(-20deg);}to{transform:scale(1) rotate(0);} }
+.ttt-mode { display: flex; gap: 10px; justify-content: center; margin-bottom: 14px; }
+.scoreboard {
+  display: flex; gap: 12px; justify-content: center;
+  margin-top: 12px; flex-wrap: wrap;
+}
+.score-item {
+  background: var(--glass); border: 2px solid rgba(255,255,255,.6);
+  border-radius: 12px; padding: 8px 16px; text-align: center;
+  backdrop-filter: blur(8px);
+}
+.score-label { font-size: .75rem; font-weight: 800; color: var(--text-mid); }
+.score-num { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--text-dark); }
+.turn-indicator {
+  text-align: center; font-weight: 800; font-size: 1.1rem;
+  color: var(--text-mid); margin: 10px 0;
+}
+
+/* ===== TEBAK ANGKA ===== */
+.ta-input-row { display: flex; gap: 10px; justify-content: center; margin: 16px 0; flex-wrap: wrap; }
+.ta-input {
+  background: rgba(255,255,255,0.6);
+  border: 3px solid rgba(255,255,255,0.8);
+  border-radius: 14px; padding: 12px 18px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem; width: 130px; text-align: center;
+  color: var(--text-dark); outline: none;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+}
+[data-theme="dark"] .ta-input { background: rgba(255,255,255,0.1); color: var(--text-dark); }
+.ta-input:focus { border-color: var(--primary); box-shadow: 0 0 16px rgba(255,107,157,.4); }
+.ta-hint {
+  text-align: center; font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem; margin: 12px 0;
+  min-height: 36px;
+  transition: all 0.3s;
+}
+.hint-high { color: var(--danger); }
+.hint-low { color: var(--accent); }
+.hint-win { color: var(--success); }
+.hearts { display: flex; gap: 4px; justify-content: center; font-size: 1.5rem; }
+@keyframes shake {
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-10px);}
+  40%{transform:translateX(10px);}
+  60%{transform:translateX(-8px);}
+  80%{transform:translateX(8px);}
+}
+.shake { animation: shake 0.5s ease; }
+
+/* ===== RPS ===== */
+.rps-choices {
+  display: flex; gap: 16px; justify-content: center;
+  flex-wrap: wrap; margin: 20px 0;
+}
+.rps-btn {
+  background: var(--glass); border: 3px solid rgba(255,255,255,.7);
+  border-radius: 20px; padding: 16px 24px;
+  font-size: 2.8rem; cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.rps-btn span { font-size: .8rem; font-weight: 800; color: var(--text-mid); font-family: 'Nunito', sans-serif; }
+.rps-btn:hover { transform: translateY(-8px) scale(1.1); border-color: var(--primary); box-shadow: 0 12px 28px var(--shadow); }
+.rps-battle {
+  display: flex; align-items: center; justify-content: center;
+  gap: 24px; margin: 16px 0;
+}
+.rps-player, .rps-bot {
+  text-align: center;
+}
+.rps-emoji { font-size: 4rem; display: block; min-height: 64px; }
+.rps-label { font-size: .85rem; font-weight: 800; color: var(--text-mid); }
+.rps-vs { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--primary); }
+.rps-result {
+  text-align: center; font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem; min-height: 40px; color: var(--text-dark);
+}
+@keyframes rpsShake {
+  0%,100%{transform:rotate(0);}
+  25%{transform:rotate(-15deg);}
+  75%{transform:rotate(15deg);}
+}
+.rps-fighting { animation: rpsShake 0.2s ease 4; }
+
+/* ===== SNAKE GAME ===== */
+#snake-canvas {
+  display: block; margin: 0 auto;
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,.6);
+  background: rgba(0,0,0,.08);
+  max-width: 100%;
+}
+[data-theme="dark"] #snake-canvas { background: rgba(0,0,0,.3); }
+.snake-controls {
+  display: grid; grid-template-columns: repeat(3,52px);
+  gap: 6px; margin: 14px auto; width: fit-content;
+}
+.d-btn {
+  width: 52px; height: 52px;
+  background: var(--glass); border: 2px solid rgba(255,255,255,.6);
+  border-radius: 12px; font-size: 1.4rem; cursor: pointer;
+  transition: var(--transition); display: flex;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.d-btn:hover { background: var(--primary); color: white; }
+.d-btn:active { transform: scale(0.92); }
+
+/* ===== CATCH GAME ===== */
+#catch-canvas {
+  display: block; margin: 0 auto;
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,.6);
+  max-width: 100%;
+}
+
+/* ===== BALLOON POP ===== */
+#balloon-area {
+  position: relative;
+  background: rgba(255,255,255,.2);
+  border-radius: 20px;
+  border: 3px solid rgba(255,255,255,.6);
+  overflow: hidden;
+  height: 400px;
+  cursor: crosshair;
+}
+[data-theme="dark"] #balloon-area { background: rgba(0,0,0,.2); }
+.balloon {
+  position: absolute; cursor: pointer;
+  transition: transform 0.15s;
+  user-select: none;
+  font-size: 2.8rem;
+  animation: riseUp var(--rise-dur, 4s) linear forwards;
+}
+.balloon:hover { transform: scale(1.15); }
+@keyframes riseUp {
+  from{bottom:-60px;} to{bottom:110%;}
+}
+@keyframes popAnim {
+  0%{transform:scale(1);opacity:1;}
+  50%{transform:scale(1.8);opacity:.6;}
+  100%{transform:scale(0);opacity:0;}
+}
+.balloon.popping { animation: popAnim 0.3s ease forwards; }
+
+/* ===== MATH QUIZ ===== */
+.math-question {
+  text-align: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: var(--text-dark); margin: 20px 0 16px;
+  animation: bounceIn 0.5s var(--transition);
+}
+.math-options {
+  display: grid; grid-template-columns: repeat(2,1fr);
+  gap: 12px; max-width: 380px; margin: 0 auto;
+}
+.math-opt {
+  background: var(--glass); border: 3px solid rgba(255,255,255,.6);
+  border-radius: 16px; padding: 18px;
+  font-family: 'Fredoka One', cursive; font-size: 1.6rem;
+  cursor: pointer; color: var(--text-dark);
+  transition: var(--transition); text-align: center;
+  backdrop-filter: blur(8px);
+}
+.math-opt:hover { transform: scale(1.05); border-color: var(--primary); box-shadow: 0 8px 24px var(--shadow); }
+.math-opt.correct { background: linear-gradient(135deg,#4ade80,#22d3ee); color: white; border-color: transparent; animation: matchPulse 0.4s ease; }
+.math-opt.wrong { background: linear-gradient(135deg,#f87171,#fb923c); color: white; border-color: transparent; animation: shake 0.4s ease; }
+
+/* ===== DINO RUN ===== */
+#dino-canvas {
+  display: block; margin: 0 auto;
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,.6);
+  background: linear-gradient(180deg, #87ceeb 0%, #b0e0e6 60%, #90ee90 60%, #228b22 100%);
+  max-width: 100%;
+}
+[data-theme="dark"] #dino-canvas {
+  background: linear-gradient(180deg, #1a1a3e 0%, #2a2a5e 60%, #1a3a1a 60%, #0a1a0a 100%);
+}
+
+/* ===== PIANO TILES ===== */
+#piano-board {
+  display: flex; gap: 4px; justify-content: center;
+  margin: 0 auto 12px;
+  overflow: hidden; position: relative;
+}
+.piano-col {
+  flex: 1; max-width: 80px;
+  display: flex; flex-direction: column; gap: 4px;
+  height: 420px; overflow: hidden; position: relative;
+}
+.piano-tile {
+  width: 100%; height: 90px;
+  border-radius: 10px; cursor: pointer;
+  position: absolute; transition: background 0.1s;
+  left: 0;
+}
+.piano-tile.black-tile {
+  background: linear-gradient(180deg, #1e1e2e, #2d2d44);
+  border: 2px solid rgba(255,255,255,.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}
+.piano-tile.white-tile {
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.3);
+}
+.piano-tile.black-tile:hover,.piano-tile.black-tile.pressed {
+  background: linear-gradient(180deg,#6d28d9,#a855f7);
+  box-shadow: 0 0 20px rgba(168,85,247,.8);
+}
+.piano-tile.miss-flash { background: #f87171 !important; }
+
+/* ===== POPUP ===== */
+.popup-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.popup-box {
+  background: var(--popup-bg);
+  border-radius: 28px; padding: 36px 32px;
+  text-align: center; max-width: 380px; width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,.25);
+  border: 3px solid rgba(255,255,255,.6);
+  animation: popupIn 0.5s var(--transition);
+  position: relative; z-index: 2;
+}
+@keyframes popupIn {
+  from{opacity:0;transform:scale(0.6) rotate(-5deg);}
+  to{opacity:1;transform:scale(1) rotate(0);}
+}
+.popup-emoji { font-size: 4rem; display: block; margin-bottom: 10px; animation: bounce 1s infinite; }
+.popup-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem; color: var(--primary); margin-bottom: 8px;
+}
+.popup-msg { font-size: 1rem; color: var(--text-mid); font-weight: 700; margin-bottom: 12px; }
+.popup-score {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem; color: var(--text-dark);
+  margin-bottom: 20px; min-height: 24px;
+}
+.popup-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ===== CONFETTI ===== */
+#confetti-container {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1;
+}
+.confetti-piece {
+  position: absolute; width: 10px; height: 10px;
+  border-radius: 2px;
+  animation: confettiFall var(--cf-dur, 3s) ease-in var(--cf-delay, 0s) forwards;
+}
+@keyframes confettiFall {
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+  100%{transform:translateY(100vh) rotate(720deg);opacity:0;}
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes bounce {
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+@keyframes bounceIn {
+  from{opacity:0;transform:scale(0.7);}
+  to{opacity:1;transform:scale(1);}
+}
+@keyframes pulse {
+  0%,100%{opacity:1;} 50%{opacity:.5;}
+}
+
+/* ===== TIMER BAR ===== */
+.timer-bar-wrap {
+  background: rgba(255,255,255,.3); border-radius: 99px;
+  height: 10px; overflow: hidden; margin: 10px 0;
+  border: 1px solid rgba(255,255,255,.5);
+}
+.timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+  border-radius: 99px;
+  transition: width 1s linear;
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .game-grid{ grid-template-columns: repeat(2,1fr); gap: 12px; }
+  .game-wrap { padding: 16px; }
+  .rps-choices { gap: 10px; }
+  .rps-btn { padding: 12px 16px; font-size: 2.2rem; }
+  .math-options { gap: 8px; }
+  .piano-col { max-width: 60px; }
+  .popup-box { padding: 24px 20px; }
+}
+@media(max-width:380px){
+  .game-grid{ grid-template-columns: repeat(2,1fr); }
+  .ttt-board { max-width: 250px; }
+  .ttt-cell { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+<div id="loading-screen">
+  <div class="loading-content">
+    <div class="loading-logo">🎮</div>
+    <h1 class="loading-title">Mini Game For Kids</h1>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+    <p class="loading-text">Memuat permainan seru...</p>
+  </div>
+  <div class="loading-floats">
+    <span>🌟</span><span>🎈</span><span>🍭</span><span>⭐</span>
+    <span>🎉</span><span>🦄</span><span>🌈</span><span>🎊</span>
+  </div>
+</div>
+<div id="app" class="hidden">
+  <header class="main-header">
+    <div class="header-left">
+      <span class="logo-emoji">🎮</span>
+      <h1 class="logo-title">Mini Game For Kids</h1>
+    </div>
+    <div class="header-right">
+      <button id="dark-mode-btn" class="icon-btn" title="Dark Mode">🌙</button>
+      <button id="mute-btn" class="icon-btn" title="Mute/Unmute">🔊</button>
+    </div>
+  </header>
+  <div class="float-bg">
+    <span>⭐</span><span>🌟</span><span>💫</span><span>✨</span>
+    <span>🎈</span><span>🎊</span><span>🍭</span><span>🌈</span>
+    <span>🦋</span><span>🌸</span><span>🎀</span><span>🍀</span>
+  </div>
+  <div id="page-home" class="page active">
+    <div class="hero-section">
+      <h2 class="hero-title">Pilih Permainanmu! 🎉</h2>
+      <p class="hero-sub">10 Game Seru Menanti Kamu!</p>
+    </div>
+    <div class="game-grid">
+      <div class="game-card" data-game="memory"><div class="card-icon">🧠</div><h3>Memory Game</h3><p>Uji Daya Ingatmu!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="tictactoe"><div class="card-icon">❌</div><h3>Tic Tac Toe</h3><p>Tantang Temanmu!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="tebakangka"><div class="card-icon">🔢</div><h3>Tebak Angka</h3><p>Tebak Nomornya!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="rps"><div class="card-icon">✊</div><h3>Rock Paper Scissors</h3><p>Siapa yang Menang?</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="snake"><div class="card-icon">🐍</div><h3>Snake Game</h3><p>Makan Terus!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="catch"><div class="card-icon">🍎</div><h3>Catch The Object</h3><p>Tangkap Buahnya!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="balloon"><div class="card-icon">🎈</div><h3>Balloon Pop</h3><p>Pecahkan Balonnya!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="math"><div class="card-icon">➕</div><h3>Math Quiz Kids</h3><p>Hitung Yuk!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="dino"><div class="card-icon">🦖</div><h3>Dino Run</h3><p>Lari! Ada Rintangan!</p><div class="card-glow"></div></div>
+      <div class="game-card" data-game="piano"><div class="card-icon">🎹</div><h3>Piano Tiles</h3><p>Klik Tile Hitamnya!</p><div class="card-glow"></div></div>
+    </div>
+  </div>
+  <div id="page-game" class="page">
+    <button id="back-btn" class="back-btn">⬅ Kembali</button>
+    <div id="game-container"></div>
+  </div>
+</div>
+<div id="popup-overlay" class="popup-overlay hidden">
+  <div class="popup-box">
+    <div class="popup-emoji" id="popup-emoji">🎉</div>
+    <h2 class="popup-title" id="popup-title">Selamat!</h2>
+    <p class="popup-msg" id="popup-msg">Kamu menang!</p>
+    <div class="popup-score" id="popup-score"></div>
+    <div class="popup-btns">
+      <button id="popup-play-again" class="btn-primary">🔄 Main Lagi</button>
+      <button id="popup-home" class="btn-secondary">🏠 Menu</button>
+    </div>
+  </div>
+  <div id="confetti-container"></div>
+</div>
+<script>
+// ===== AUDIO SYSTEM =====
+const Audio = (() => {
+  let ctx = null;
+  let muted = false;
+  let bgNode = null;
+
+  const getCtx = () => {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  };
+
+  const beep = (freq, dur, type='sine', vol=0.3, delay=0) => {
+    if (muted) return;
+    try {
+      const c = getCtx();
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.connect(gain); gain.connect(c.destination);
+      osc.type = type; osc.frequency.value = freq;
+      const t = c.currentTime + delay;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.start(t); osc.stop(t + dur + 0.05);
+    } catch(e){}
+  };
+
+  const play = {
+    click: () => beep(800, 0.08, 'sine', 0.2),
+    flip: () => { beep(440, 0.1); beep(660, 0.1, 'sine', 0.2, 0.1); },
+    match: () => { beep(523, 0.12); beep(659, 0.12, 'sine', 0.3, 0.1); beep(784, 0.2, 'sine', 0.3, 0.22); },
+    wrong: () => { beep(200, 0.15, 'sawtooth', 0.2); beep(150, 0.15, 'sawtooth', 0.2, 0.15); },
+    win: () => {
+      [523,659,784,1047].forEach((f,i) => beep(f, 0.18, 'sine', 0.3, i*0.12));
+    },
+    lose: () => { beep(300, 0.2, 'sawtooth', 0.25); beep(200, 0.3, 'sawtooth', 0.25, 0.2); },
+    eat: () => beep(880, 0.06, 'sine', 0.25),
+    pop: () => { beep(1200, 0.05, 'triangle', 0.3); beep(600, 0.08, 'triangle', 0.2, 0.04); },
+    jump: () => { beep(400, 0.05); beep(600, 0.08, 'sine', 0.2, 0.05); beep(800, 0.06, 'sine', 0.15, 0.1); },
+    levelup: () => { [784,880,1047,1319].forEach((f,i) => beep(f, 0.14, 'triangle', 0.3, i*0.1)); },
+    correct: () => { beep(660, 0.12); beep(880, 0.15, 'sine', 0.3, 0.1); },
+    piano: (note) => {
+      const freqs = [262,294,330,349,392,440,494,523];
+      beep(freqs[note % freqs.length], 0.4, 'sine', 0.4);
+    },
+    collect: () => { beep(1047, 0.08); beep(1319, 0.1, 'sine', 0.25, 0.08); },
+    bomb: () => { beep(80, 0.3, 'sawtooth', 0.4); beep(60, 0.4, 'sawtooth', 0.3, 0.1); },
+    gameover: () => {
+      [400,350,300,200].forEach((f,i) => beep(f, 0.2, 'sawtooth', 0.25, i*0.15));
+    },
+    bg: () => {
+      if (muted || bgNode) return;
+      try {
+        const c = getCtx();
+        const notes = [261, 329, 392, 329, 261, 329, 440, 392];
+        let time = c.currentTime;
+        const playBg = () => {
+          notes.forEach(freq => {
+            const osc = c.createOscillator();
+            const gain = c.createGain();
+            osc.connect(gain); gain.connect(c.destination);
+            osc.type = 'triangle'; osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.04, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
+            osc.start(time); osc.stop(time + 0.45);
+            time += 0.45;
+          });
+          bgNode = setTimeout(playBg, notes.length * 450);
+        };
+        playBg();
+      } catch(e){}
+    },
+    stopBg: () => { if (bgNode) { clearTimeout(bgNode); bgNode = null; } }
+  };
+
+  const toggleMute = () => {
+    muted = !muted;
+    if (muted) play.stopBg();
+    else play.bg();
+    localStorage.setItem('mgk_muted', muted);
+    return muted;
+  };
+
+  const init = () => {
+    muted = localStorage.getItem('mgk_muted') === 'true';
+    return muted;
+  };
+
+  return { play, toggleMute, init, isMuted: () => muted };
+})();
+// ===== UTILITIES =====
+const Utils = {
+  rand: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+  shuffle: arr => [...arr].sort(() => Math.random() - 0.5),
+
+  getLS: (key, def) => {
+    try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
+    catch { return def; }
+  },
+  setLS: (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} },
+
+  confetti: () => {
+    const colors = ['#ff6b9d','#c084fc','#38bdf8','#4ade80','#fbbf24','#f87171','#fb923c'];
+    const container = document.getElementById('confetti-container');
+    container.innerHTML = '';
+    for (let i = 0; i < 80; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.cssText = `
+        left: ${Math.random() * 100}%;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        --cf-dur: ${1.5 + Math.random() * 2}s;
+        --cf-delay: ${Math.random() * 0.8}s;
+        width: ${6 + Math.random() * 8}px;
+        height: ${6 + Math.random() * 8}px;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      `;
+      container.appendChild(piece);
+    }
+    setTimeout(() => container.innerHTML = '', 4000);
+  },
+
+  shake: (el) => {
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+    setTimeout(() => el.classList.remove('shake'), 500);
+  },
+
+  showPopup: (opts) => {
+    document.getElementById('popup-emoji').textContent = opts.emoji || '🎉';
+    document.getElementById('popup-title').textContent = opts.title || 'Selamat!';
+    document.getElementById('popup-msg').textContent = opts.msg || '';
+    document.getElementById('popup-score').textContent = opts.score || '';
+    document.getElementById('popup-overlay').classList.remove('hidden');
+    if (opts.confetti) Utils.confetti();
+    if (opts.onPlayAgain) {
+      document.getElementById('popup-play-again')._cb = opts.onPlayAgain;
+    }
+    if (opts.onHome) {
+      document.getElementById('popup-home')._cb = opts.onHome;
+    }
+  },
+
+  hidePopup: () => {
+    document.getElementById('popup-overlay').classList.add('hidden');
+    document.getElementById('confetti-container').innerHTML = '';
+  },
+
+  formatTime: (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`,
+
+  qs: (sel, ctx = document) => ctx.querySelector(sel),
+  qsa: (sel, ctx = document) => [...ctx.querySelectorAll(sel)],
+
+  el: (tag, cls, txt) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt) e.textContent = txt;
+    return e;
+  }
+};
+// ===== MEMORY GAME =====
+const MemoryGame = (() => {
+  const EMOJIS = ['🍩','☕','🍪','🍫','🧁','🍰','🐱','🐶','🌸','⭐','🎈','🦄'];
+  const LEVELS = { easy:[2,2], medium:[4,2], hard:[4,3] };
+  
+  let flipped = [], matched = 0, moves = 0, timer = null, seconds = 0, level = 'easy', lock = false;
+
+  const render = () => {
+    const [cols, rows] = LEVELS[level];
+    const total = cols * rows;
+    const pool = EMOJIS.slice(0, total / 2);
+    const cards = Utils.shuffle([...pool, ...pool]);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">🧠 Memory Game</h2>
+      <div class="level-select">
+        <button class="level-btn ${level==='easy'?'active':''}" data-l="easy">😊 Mudah</button>
+        <button class="level-btn ${level==='medium'?'active':''}" data-l="medium">😎 Sedang</button>
+        <button class="level-btn ${level==='hard'?'active':''}" data-l="hard">🔥 Sulit</button>
+      </div>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">⏱ Waktu</div><div class="stat-val" id="mem-time">00:00</div></div>
+        <div class="stat-box"><div class="stat-label">🎯 Gerakan</div><div class="stat-val" id="mem-moves">0</div></div>
+        <div class="stat-box"><div class="stat-label">✅ Pasang</div><div class="stat-val" id="mem-match">0/${total/2}</div></div>
+      </div>
+      <div class="memory-grid" id="mem-grid" style="grid-template-columns:repeat(${cols},1fr);max-width:${cols*96}px;"></div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="btn-primary" id="mem-restart">🔄 Mulai Ulang</button>
+      </div>
+    `;
+
+    const grid = wrap.querySelector('#mem-grid');
+    cards.forEach((emoji, i) => {
+      const card = document.createElement('div');
+      card.className = 'mem-card';
+      card.dataset.i = i;
+      card.dataset.emoji = emoji;
+      card.innerHTML = `<div class="mem-inner"><div class="mem-front">✨</div><div class="mem-back">${emoji}</div></div>`;
+      card.addEventListener('click', () => handleFlip(card));
+      grid.appendChild(card);
+    });
+
+    wrap.querySelectorAll('.level-btn').forEach(b => b.addEventListener('click', () => {
+      level = b.dataset.l; reset();
+    }));
+    wrap.querySelector('#mem-restart').addEventListener('click', reset);
+
+    return wrap;
+  };
+
+  const handleFlip = (card) => {
+    if (lock || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+    Audio.play.flip();
+    card.classList.add('flipped');
+    flipped.push(card);
+    moves++;
+    document.getElementById('mem-moves').textContent = moves;
+
+    if (flipped.length === 2) {
+      lock = true;
+      const [a, b] = flipped;
+      if (a.dataset.emoji === b.dataset.emoji) {
+        Audio.play.match();
+        a.classList.add('matched'); b.classList.add('matched');
+        matched++;
+        const [cols, rows] = LEVELS[level];
+        document.getElementById('mem-match').textContent = `${matched}/${(cols*rows)/2}`;
+        flipped = []; lock = false;
+        if (matched === (LEVELS[level][0]*LEVELS[level][1])/2) {
+          clearInterval(timer);
+          Audio.play.win();
+          const best = Utils.getLS('mem_best_'+level, 9999);
+          if (seconds < best) Utils.setLS('mem_best_'+level, seconds);
+          setTimeout(() => Utils.showPopup({
+            emoji: '🧠', title: 'Luar Biasa!',
+            msg: `Kamu menemukan semua pasangan!`,
+            score: `⏱ ${Utils.formatTime(seconds)} | 🎯 ${moves} gerakan`,
+            confetti: true,
+            onPlayAgain: reset
+          }), 400);
+        }
+      } else {
+        Audio.play.wrong();
+        setTimeout(() => {
+          a.classList.remove('flipped'); b.classList.remove('flipped');
+          flipped = []; lock = false;
+        }, 900);
+      }
+    }
+  };
+
+  const startTimer = () => {
+    seconds = 0;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      seconds++;
+      const el = document.getElementById('mem-time');
+      if (el) el.textContent = Utils.formatTime(seconds);
+    }, 1000);
+  };
+
+  const reset = () => {
+    clearInterval(timer);
+    flipped = []; matched = 0; moves = 0; lock = false;
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    startTimer();
+  };
+
+  const init = () => {
+    level = 'easy'; reset();
+  };
+
+  const destroy = () => clearInterval(timer);
+
+  return { init, destroy };
+})();
+// ===== TIC TAC TOE =====
+const TicTacToe = (() => {
+  let board, current, scores, mode, gameActive;
+  const WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+  const render = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">❌⭕ Tic Tac Toe</h2>
+      <div class="ttt-mode">
+        <button class="level-btn ${mode==='friend'?'active':''}" id="ttt-friend">👥 Vs Teman</button>
+        <button class="level-btn ${mode==='bot'?'active':''}" id="ttt-bot">🤖 Vs Bot</button>
+      </div>
+      <div class="turn-indicator" id="ttt-turn">Giliran: ❌</div>
+      <div class="ttt-board" id="ttt-board">
+        ${Array(9).fill('').map((_,i)=>`<div class="ttt-cell" data-i="${i}"></div>`).join('')}
+      </div>
+      <div class="scoreboard">
+        <div class="score-item"><div class="score-label">❌ Player 1</div><div class="score-num" id="sc-x">0</div></div>
+        <div class="score-item"><div class="score-label">🤝 Seri</div><div class="score-num" id="sc-d">0</div></div>
+        <div class="score-item"><div class="score-label">⭕ ${mode==='bot'?'Bot':'Player 2'}</div><div class="score-num" id="sc-o">0</div></div>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="btn-primary" id="ttt-restart">🔄 Mulai Ulang</button>
+      </div>
+    `;
+
+    wrap.querySelectorAll('.ttt-cell').forEach(cell => cell.addEventListener('click', () => handleClick(cell)));
+    wrap.querySelector('#ttt-friend').addEventListener('click', () => { mode='friend'; resetGame(); });
+    wrap.querySelector('#ttt-bot').addEventListener('click', () => { mode='bot'; resetGame(); });
+    wrap.querySelector('#ttt-restart').addEventListener('click', resetGame);
+    return wrap;
+  };
+
+  const handleClick = (cell) => {
+    if (!gameActive || board[cell.dataset.i]) return;
+    Audio.play.click();
+    placeMove(parseInt(cell.dataset.i), current);
+    const win = checkWin();
+    if (win) return endGame(win);
+    if (!board.includes(null)) return endGame(null);
+    current = current === 'X' ? 'O' : 'X';
+    updateTurn();
+    if (mode === 'bot' && current === 'O') {
+      setTimeout(botMove, 450);
+    }
+  };
+
+  const placeMove = (i, player) => {
+    board[i] = player;
+    const cell = document.querySelector(`[data-i="${i}"]`);
+    cell.classList.add('taken');
+    cell.innerHTML = `<span>${player === 'X' ? '❌' : '⭕'}</span>`;
+  };
+
+  const botMove = () => {
+    if (!gameActive) return;
+    const best = getBotMove();
+    placeMove(best, 'O');
+    const win = checkWin();
+    if (win) return endGame(win);
+    if (!board.includes(null)) return endGame(null);
+    current = 'X';
+    updateTurn();
+  };
+
+  const getBotMove = () => {
+    // Try to win
+    for (let i = 0; i < 9; i++) {
+      if (!board[i]) { board[i]='O'; if(checkWin()) { board[i]=null; return i; } board[i]=null; }
+    }
+    // Block player
+    for (let i = 0; i < 9; i++) {
+      if (!board[i]) { board[i]='X'; if(checkWin()) { board[i]=null; return i; } board[i]=null; }
+    }
+    // Center
+    if (!board[4]) return 4;
+    // Corner
+    const corners = [0,2,6,8].filter(i => !board[i]);
+    if (corners.length) return corners[Math.floor(Math.random()*corners.length)];
+    // Any
+    const empty = board.map((v,i)=>v?null:i).filter(v=>v!==null);
+    return empty[Math.floor(Math.random()*empty.length)];
+  };
+
+  const checkWin = () => {
+    for (const [a,b,c] of WINS) {
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) return [a,b,c];
+    }
+    return null;
+  };
+
+  const endGame = (winLine) => {
+    gameActive = false;
+    if (winLine) {
+      winLine.forEach(i => document.querySelector(`[data-i="${i}"]`).classList.add('win-cell'));
+      const winner = board[winLine[0]];
+      scores[winner]++;
+      document.getElementById(winner==='X'?'sc-x':'sc-o').textContent = scores[winner];
+      Audio.play.win();
+      const isBot = mode==='bot' && winner==='O';
+      setTimeout(() => Utils.showPopup({
+        emoji: winner==='X'?'🎉':'😎',
+        title: winner==='X'?'Player 1 Menang!':(isBot?'Bot Menang!':'Player 2 Menang!'),
+        msg: winner==='X'?'Selamat, kamu hebat!':(isBot?'Bot mengalahkanmu kali ini!':'Player 2 yang menang!'),
+        confetti: winner==='X' || (mode==='friend'),
+        onPlayAgain: resetGame
+      }), 400);
+    } else {
+      scores.D++;
+      document.getElementById('sc-d').textContent = scores.D;
+      Audio.play.wrong();
+      setTimeout(() => Utils.showPopup({
+        emoji:'🤝', title:'Seri!',
+        msg:'Permainan imbang! Coba lagi!',
+        onPlayAgain: resetGame
+      }), 200);
+    }
+  };
+
+  const updateTurn = () => {
+    const el = document.getElementById('ttt-turn');
+    if (el) el.textContent = `Giliran: ${current === 'X' ? '❌ Player 1' : (mode==='bot'?'🤖 Bot':'⭕ Player 2')}`;
+  };
+
+  const resetGame = () => {
+    board = Array(9).fill(null);
+    current = 'X'; gameActive = true;
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    Utils.hidePopup();
+  };
+
+  const init = () => {
+    mode = 'friend';
+    scores = { X:0, O:0, D:0 };
+    resetGame();
+  };
+
+  const destroy = () => {};
+  return { init, destroy };
+})();
+// ===== TEBAK ANGKA =====
+const TebakAngka = (() => {
+  let secret, lives, score, attempts, maxNum, timer, seconds, highScore, timerMax;
+  const LEVELS = { '10':[10,30], '25':[25,45], '50':[50,60], '100':[100,90] };
+  let levelKey = '10';
+
+  const render = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">🔢 Tebak Angka</h2>
+      <p class="game-subtitle">Tebak angka 1 - ${maxNum}!</p>
+      <div class="level-select">
+        ${Object.keys(LEVELS).map(k=>`<button class="level-btn ${k===levelKey?'active':''}" data-l="${k}">1-${k}</button>`).join('')}
+      </div>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">❤️ Nyawa</div><div class="stat-val" id="ta-lives">5</div></div>
+        <div class="stat-box"><div class="stat-label">⭐ Score</div><div class="stat-val" id="ta-score">0</div></div>
+        <div class="stat-box"><div class="stat-label">⏱ Waktu</div><div class="stat-val" id="ta-timer">--</div></div>
+        <div class="stat-box"><div class="stat-label">🏆 Best</div><div class="stat-val" id="ta-best">${Utils.getLS('ta_best_'+levelKey,0)}</div></div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="ta-timerbar" style="width:100%"></div></div>
+      <div class="hearts" id="ta-hearts"></div>
+      <div class="ta-hint" id="ta-hint">Masukkan tebakanmu! 🤔</div>
+      <div class="ta-input-row">
+        <input type="number" class="ta-input" id="ta-input" placeholder="?" min="1" max="${maxNum}" />
+        <button class="btn-primary" id="ta-guess">✅ Tebak!</button>
+      </div>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn-secondary" id="ta-restart">🔄 Ulang</button>
+      </div>
+    `;
+
+    wrap.querySelectorAll('.level-btn').forEach(b => b.addEventListener('click', () => {
+      levelKey = b.dataset.l; init();
+    }));
+
+    const guessBtn = wrap.querySelector('#ta-guess');
+    const input = wrap.querySelector('#ta-input');
+    guessBtn.addEventListener('click', () => doGuess());
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doGuess(); });
+    wrap.querySelector('#ta-restart').addEventListener('click', init);
+
+    return wrap;
+  };
+
+  const doGuess = () => {
+    const input = document.getElementById('ta-input');
+    const val = parseInt(input.value);
+    if (!val || val < 1 || val > maxNum) { Utils.shake(input); return; }
+    input.value = '';
+    attempts++;
+
+    if (val === secret) {
+      clearInterval(timer);
+      score += Math.max(10, Math.floor(100 * (seconds / timerMax)));
+      document.getElementById('ta-score').textContent = score;
+      Audio.play.win();
+      const best = Utils.getLS('ta_best_'+levelKey, 0);
+      if (score > best) { Utils.setLS('ta_best_'+levelKey, score); }
+      showHint(`🎉 BENAR! Angkanya ${secret}!`, 'hint-win');
+      Utils.confetti();
+      setTimeout(() => Utils.showPopup({
+        emoji:'🎉', title:'Tebakan Benar!',
+        msg:`Angkanya memang ${secret}! Coba lagi!`,
+        score:`⭐ Score: ${score} | 🎯 ${attempts} percobaan`,
+        confetti: true, onPlayAgain: init
+      }), 600);
+    } else {
+      lives--;
+      Audio.play.wrong();
+      updateHearts();
+      if (val > secret) showHint('📉 Terlalu besar! Coba lebih kecil', 'hint-high');
+      else showHint('📈 Terlalu kecil! Coba lebih besar', 'hint-low');
+      Utils.shake(document.getElementById('ta-input'));
+      if (lives <= 0) {
+        clearInterval(timer);
+        Audio.play.gameover();
+        setTimeout(() => Utils.showPopup({
+          emoji:'😢', title:'Game Over!',
+          msg:`Angkanya adalah ${secret}! Lebih semangat ya!`,
+          score:`⭐ Score: ${score}`, onPlayAgain: init
+        }), 400);
+      }
+    }
+  };
+
+  const showHint = (txt, cls='') => {
+    const el = document.getElementById('ta-hint');
+    if (!el) return;
+    el.textContent = txt;
+    el.className = `ta-hint ${cls}`;
+  };
+
+  const updateHearts = () => {
+    const hearts = document.getElementById('ta-hearts');
+    const lv = document.getElementById('ta-lives');
+    if (!hearts) return;
+    hearts.innerHTML = Array(5).fill(0).map((_,i) => `<span>${i < lives ? '❤️' : '🖤'}</span>`).join('');
+    if (lv) lv.textContent = lives;
+  };
+
+  const startTimer = () => {
+    seconds = timerMax;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      seconds = Math.max(0, seconds - 1);
+      const el = document.getElementById('ta-timer');
+      const bar = document.getElementById('ta-timerbar');
+      if (el) el.textContent = seconds;
+      if (bar) bar.style.width = (seconds/timerMax*100)+'%';
+      if (seconds <= 0) {
+        clearInterval(timer);
+        lives = 0;
+        updateHearts();
+        Audio.play.gameover();
+        setTimeout(() => Utils.showPopup({
+          emoji:'⏱', title:'Waktu Habis!',
+          msg:`Angkanya adalah ${secret}!`,
+          score:`⭐ Score: ${score}`, onPlayAgain: init
+        }), 200);
+      }
+    }, 1000);
+  };
+
+  const init = () => {
+    [maxNum, timerMax] = LEVELS[levelKey];
+    secret = Utils.rand(1, maxNum);
+    lives = 5; score = 0; attempts = 0;
+    Utils.hidePopup();
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    updateHearts();
+    startTimer();
+  };
+
+  const destroy = () => clearInterval(timer);
+  return { init, destroy };
+})();
+// ===== ROCK PAPER SCISSORS =====
+const RPS = (() => {
+  const CHOICES = [
+    { id:'rock', emoji:'✊', label:'Batu' },
+    { id:'paper', emoji:'✋', label:'Kertas' },
+    { id:'scissors', emoji:'✌️', label:'Gunting' }
+  ];
+  let scores = { player:0, bot:0, draw:0 };
+  let playing = false;
+
+  const beats = { rock:'scissors', paper:'rock', scissors:'paper' };
+
+  const render = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">✊ Rock Paper Scissors</h2>
+      <p class="game-subtitle">Pilih seranganmu!</p>
+      <div class="rps-battle">
+        <div class="rps-player">
+          <span class="rps-emoji" id="rps-pe">🤔</span>
+          <span class="rps-label">Kamu</span>
+        </div>
+        <div class="rps-vs">VS</div>
+        <div class="rps-bot">
+          <span class="rps-emoji" id="rps-be">🤖</span>
+          <span class="rps-label">Bot</span>
+        </div>
+      </div>
+      <div class="rps-result" id="rps-result">Pilihlah salah satu!</div>
+      <div class="rps-choices">
+        ${CHOICES.map(c=>`
+          <button class="rps-btn" data-id="${c.id}">
+            ${c.emoji}
+            <span>${c.label}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="scoreboard">
+        <div class="score-item"><div class="score-label">😊 Kamu</div><div class="score-num" id="rps-sp">0</div></div>
+        <div class="score-item"><div class="score-label">🤝 Seri</div><div class="score-num" id="rps-sd">0</div></div>
+        <div class="score-item"><div class="score-label">🤖 Bot</div><div class="score-num" id="rps-sb">0</div></div>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="btn-secondary" id="rps-reset">🔄 Reset Score</button>
+      </div>
+    `;
+
+    wrap.querySelectorAll('.rps-btn').forEach(btn => btn.addEventListener('click', () => {
+      if (playing) return;
+      Audio.play.click();
+      doGame(btn.dataset.id);
+    }));
+    wrap.querySelector('#rps-reset').addEventListener('click', () => {
+      scores = { player:0, bot:0, draw:0 };
+      updateScores();
+    });
+
+    return wrap;
+  };
+
+  const doGame = (playerChoice) => {
+    playing = true;
+    const botChoice = CHOICES[Utils.rand(0, 2)].id;
+    const playerObj = CHOICES.find(c=>c.id===playerChoice);
+    const botObj = CHOICES.find(c=>c.id===botChoice);
+
+    // Animate
+    const pe = document.getElementById('rps-pe');
+    const be = document.getElementById('rps-be');
+    if (pe && be) {
+      pe.textContent = '❓'; be.textContent = '❓';
+      pe.classList.add('rps-fighting'); be.classList.add('rps-fighting');
+    }
+
+    setTimeout(() => {
+      if (!pe || !be) return;
+      pe.textContent = playerObj.emoji;
+      be.textContent = botObj.emoji;
+      pe.classList.remove('rps-fighting');
+      be.classList.remove('rps-fighting');
+
+      let result, emoji;
+      if (playerChoice === botChoice) {
+        result = '🤝 Seri!'; emoji = '🤝';
+        scores.draw++;
+        Audio.play.wrong();
+      } else if (beats[playerChoice] === botChoice) {
+        result = '🎉 Kamu Menang!'; emoji = '🎉';
+        scores.player++;
+        Audio.play.win();
+      } else {
+        result = '😢 Kamu Kalah!'; emoji = '😢';
+        scores.bot++;
+        Audio.play.lose();
+        Utils.shake(pe);
+      }
+
+      const rr = document.getElementById('rps-result');
+      if (rr) rr.textContent = result;
+      updateScores();
+      playing = false;
+    }, 700);
+  };
+
+  const updateScores = () => {
+    const sp = document.getElementById('rps-sp');
+    const sd = document.getElementById('rps-sd');
+    const sb = document.getElementById('rps-sb');
+    if (sp) sp.textContent = scores.player;
+    if (sd) sd.textContent = scores.draw;
+    if (sb) sb.textContent = scores.bot;
+  };
+
+  const init = () => {
+    scores = { player:0, bot:0, draw:0 };
+    playing = false;
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+  };
+
+  const destroy = () => {};
+  return { init, destroy };
+})();
+// ===== SNAKE GAME =====
+const SnakeGame = (() => {
+  const GRID = 20, SIZE = 400;
+  const CELL = SIZE / GRID;
+  let canvas, ctx, snake, dir, nextDir, food, score, highScore, interval, running;
+
+  const render = () => {
+    const isMobile = window.innerWidth < 600;
+    const sz = isMobile ? Math.min(window.innerWidth - 64, 320) : 400;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">🐍 Snake Game</h2>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">⭐ Score</div><div class="stat-val" id="sn-score">0</div></div>
+        <div class="stat-box"><div class="stat-label">🏆 Best</div><div class="stat-val" id="sn-best">${Utils.getLS('snake_best',0)}</div></div>
+        <div class="stat-box"><div class="stat-label">⚡ Level</div><div class="stat-val" id="sn-level">1</div></div>
+      </div>
+      <canvas id="snake-canvas" width="${sz}" height="${sz}"></canvas>
+      <div class="snake-controls">
+        <div></div>
+        <button class="d-btn" id="d-up">⬆️</button>
+        <div></div>
+        <button class="d-btn" id="d-left">⬅️</button>
+        <button class="d-btn" id="d-start">▶️</button>
+        <button class="d-btn" id="d-right">➡️</button>
+        <div></div>
+        <button class="d-btn" id="d-down">⬇️</button>
+        <div></div>
+      </div>
+      <div style="text-align:center;">
+        <button class="btn-secondary" id="sn-restart">🔄 Restart</button>
+      </div>
+    `;
+
+    wrap.querySelector('#d-up').addEventListener('click', ()=>setDir(0,-1));
+    wrap.querySelector('#d-down').addEventListener('click', ()=>setDir(0,1));
+    wrap.querySelector('#d-left').addEventListener('click', ()=>setDir(-1,0));
+    wrap.querySelector('#d-right').addEventListener('click', ()=>setDir(1,0));
+    wrap.querySelector('#d-start').addEventListener('click', startGame);
+    wrap.querySelector('#sn-restart').addEventListener('click', startGame);
+
+    return wrap;
+  };
+
+  const setDir = (x, y) => {
+    if (x !== 0 && dir.x !== 0) return;
+    if (y !== 0 && dir.y !== 0) return;
+    nextDir = {x, y};
+    if (!running) startGame();
+  };
+
+  const spawnFood = () => {
+    do {
+      food = { x: Utils.rand(0, GRID-1), y: Utils.rand(0, GRID-1) };
+    } while (snake.some(s => s.x === food.x && s.y === food.y));
+  };
+
+  const startGame = () => {
+    score = 0; running = true;
+    highScore = Utils.getLS('snake_best', 0);
+    snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+    dir = {x:1, y:0}; nextDir = {x:1, y:0};
+    spawnFood();
+    clearInterval(interval);
+    Utils.hidePopup();
+    updateUI();
+    loop();
+  };
+
+  const loop = () => {
+    const speed = Math.max(80, 200 - Math.floor(score/30)*20);
+    clearInterval(interval);
+    interval = setInterval(tick, speed);
+  };
+
+  const tick = () => {
+    if (!canvas) { clearInterval(interval); return; }
+    dir = nextDir;
+    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+    if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID ||
+        snake.some(s => s.x === head.x && s.y === head.y)) {
+      gameOver(); return;
+    }
+
+    snake.unshift(head);
+    if (head.x === food.x && head.y === food.y) {
+      score++; Audio.play.eat();
+      if (score > highScore) { highScore = score; Utils.setLS('snake_best', highScore); }
+      spawnFood(); updateUI(); loop();
+    } else {
+      snake.pop();
+    }
+    draw();
+  };
+
+  const draw = () => {
+    if (!canvas || !ctx) return;
+    const sz = canvas.width, cell = sz / GRID;
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    ctx.clearRect(0,0,sz,sz);
+
+    // Grid
+    ctx.strokeStyle = dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)';
+    for (let i=0;i<=GRID;i++){
+      ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell,sz); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(sz,i*cell); ctx.stroke();
+    }
+
+    // Food
+    ctx.font = `${cell*0.85}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🍎', food.x*cell+cell/2, food.y*cell+cell/2);
+
+    // Snake body
+    snake.forEach((seg, i) => {
+      const grad = ctx.createLinearGradient(seg.x*cell, seg.y*cell, (seg.x+1)*cell, (seg.y+1)*cell);
+      if (i === 0) {
+        grad.addColorStop(0, '#4ade80'); grad.addColorStop(1, '#22d3ee');
+      } else {
+        const alpha = Math.max(0.4, 1 - i*0.04);
+        grad.addColorStop(0, `rgba(74,222,128,${alpha})`);
+        grad.addColorStop(1, `rgba(34,211,238,${alpha})`);
+      }
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(seg.x*cell+1, seg.y*cell+1, cell-2, cell-2, 4);
+      ctx.fill();
+      if (i === 0) {
+        ctx.shadowColor='#4ade80'; ctx.shadowBlur=12;
+        ctx.fill(); ctx.shadowBlur=0;
+      }
+    });
+  };
+
+  const updateUI = () => {
+    const s = document.getElementById('sn-score');
+    const b = document.getElementById('sn-best');
+    const l = document.getElementById('sn-level');
+    if (s) s.textContent = score;
+    if (b) b.textContent = highScore;
+    if (l) l.textContent = Math.floor(score/30)+1;
+  };
+
+  const gameOver = () => {
+    clearInterval(interval);
+    running = false;
+    Audio.play.gameover();
+    setTimeout(() => Utils.showPopup({
+      emoji:'💀', title:'Game Over!',
+      msg:'Ularmu menabrak sesuatu!',
+      score:`⭐ Score: ${score} | 🏆 Best: ${highScore}`,
+      onPlayAgain: startGame
+    }), 300);
+  };
+
+  const init = () => {
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    canvas = document.getElementById('snake-canvas');
+    ctx = canvas.getContext('2d');
+    score = 0; running = false;
+    // Keyboard
+    document.addEventListener('keydown', handleKey);
+    // Start
+    snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+    dir = {x:1,y:0}; nextDir={x:1,y:0};
+    spawnFood(); draw();
+  };
+
+  const handleKey = (e) => {
+    const map = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] };
+    if (map[e.key]) { e.preventDefault(); setDir(...map[e.key]); }
+  };
+
+  const destroy = () => {
+    clearInterval(interval);
+    document.removeEventListener('keydown', handleKey);
+    canvas = null; ctx = null; running = false;
+  };
+
+  return { init, destroy };
+})();
+// ===== CATCH THE OBJECT =====
+const CatchGame = (() => {
+  let canvas, ctx, player, objects, score, lives, level, interval, spawnTimer, running, combo, raf;
+  const GOOD = ['🍎','🍊','🍋','🍇','🍓','🍑','🥝','🍒'];
+  const BAD = ['💣','💥','☠️'];
+
+  const W = () => canvas ? canvas.width : 400;
+  const H = () => canvas ? canvas.height : 400;
+
+  const render = () => {
+    const isMobile = window.innerWidth < 600;
+    const sz = isMobile ? Math.min(window.innerWidth - 64, 340) : 400;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">🍎 Catch The Object</h2>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">⭐ Score</div><div class="stat-val" id="ct-score">0</div></div>
+        <div class="stat-box"><div class="stat-label">❤️ Nyawa</div><div class="stat-val" id="ct-lives">3</div></div>
+        <div class="stat-box"><div class="stat-label">⚡ Level</div><div class="stat-val" id="ct-level">1</div></div>
+        <div class="stat-box"><div class="stat-label">🔥 Combo</div><div class="stat-val" id="ct-combo">x1</div></div>
+      </div>
+      <canvas id="catch-canvas" width="${sz}" height="${sz*0.9}"></canvas>
+      <p style="text-align:center;font-size:.85rem;color:var(--text-mid);font-weight:700;margin-top:8px;">
+        🖱️ Gerak mouse/sentuh untuk menangkap buah!
+      </p>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn-primary" id="ct-start">▶️ Mulai</button>
+        <button class="btn-secondary" id="ct-restart" style="margin-left:8px;">🔄 Restart</button>
+      </div>
+    `;
+
+    wrap.querySelector('#ct-start').addEventListener('click', startGame);
+    wrap.querySelector('#ct-restart').addEventListener('click', startGame);
+    return wrap;
+  };
+
+  const startGame = () => {
+    if (!canvas) return;
+    score = 0; lives = 3; level = 1; combo = 1; running = true;
+    objects = [];
+    player = { x: W()/2, y: H()-40, w: 70, h: 18 };
+    clearInterval(interval); clearInterval(spawnTimer);
+    Utils.hidePopup(); updateUI();
+
+    canvas.addEventListener('mousemove', mouseMove);
+    canvas.addEventListener('touchmove', touchMove, {passive:false});
+
+    spawnTimer = setInterval(spawnObj, Math.max(600, 1200 - level*100));
+    requestAnimationFrame(gameLoop);
+  };
+
+  const spawnObj = () => {
+    if (!running) return;
+    const isBad = Math.random() < 0.25 + level*0.02;
+    const emoji = isBad ? BAD[Utils.rand(0,BAD.length-1)] : GOOD[Utils.rand(0,GOOD.length-1)];
+    objects.push({
+      x: Utils.rand(20, W()-40), y: -30,
+      emoji, bad: isBad,
+      speed: 2 + level*0.7 + Math.random()*1.5,
+      size: 28 + Utils.rand(-4,4)
+    });
+    // Level up
+    if (score > level * 20) {
+      level = Math.min(10, Math.floor(score/20)+1);
+      clearInterval(spawnTimer);
+      spawnTimer = setInterval(spawnObj, Math.max(600, 1200 - level*100));
+      Audio.play.levelup();
+    }
+  };
+
+  const gameLoop = () => {
+    if (!running || !canvas) return;
+    ctx.clearRect(0,0,W(),H());
+
+    // BG
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    ctx.fillStyle = dark ? 'rgba(10,10,40,0.5)' : 'rgba(255,255,255,0.3)';
+    ctx.fillRect(0,0,W(),H());
+
+    // Player (basket)
+    const grad = ctx.createLinearGradient(player.x-player.w/2, 0, player.x+player.w/2, 0);
+    grad.addColorStop(0, '#ff6b9d'); grad.addColorStop(1, '#c084fc');
+    ctx.fillStyle = grad;
+    ctx.shadowColor = '#ff6b9d'; ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.roundRect(player.x - player.w/2, player.y, player.w, player.h, 8);
+    ctx.fill(); ctx.shadowBlur = 0;
+
+    // Objects
+    ctx.font = '28px serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    objects.forEach(obj => {
+      obj.y += obj.speed;
+      ctx.font = `${obj.size}px serif`;
+      ctx.fillText(obj.emoji, obj.x, obj.y);
+
+      // Hit player
+      if (obj.y > player.y - 10 && obj.y < player.y + player.h &&
+          obj.x > player.x - player.w/2 - 10 && obj.x < player.x + player.w/2 + 10) {
+        if (obj.bad) {
+          lives--; combo = 1; Audio.play.bomb();
+          updateUI();
+          if (lives <= 0) { endGame(); return; }
+        } else {
+          score += combo; combo++;
+          Audio.play.collect();
+          showFloatScore(obj.x, obj.y, `+${combo-1>1?combo-1:1}`);
+          updateUI();
+        }
+        obj.dead = true;
+      }
+      // Miss
+      if (obj.y > H() + 20) {
+        if (!obj.bad) { combo = 1; updateUI(); }
+        obj.dead = true;
+      }
+    });
+    objects = objects.filter(o => !o.dead);
+
+    requestAnimationFrame(gameLoop);
+  };
+
+  const showFloatScore = (x, y, txt) => {
+    if (!ctx) return;
+    ctx.save();
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 18px Nunito';
+    ctx.textAlign = 'center';
+    ctx.fillText(txt, x, y - 10);
+    ctx.restore();
+  };
+
+  const mouseMove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    player.x = (e.clientX - rect.left) * scaleX;
+    player.x = Math.max(player.w/2, Math.min(W()-player.w/2, player.x));
+  };
+
+  const touchMove = (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    player.x = (e.touches[0].clientX - rect.left) * scaleX;
+    player.x = Math.max(player.w/2, Math.min(W()-player.w/2, player.x));
+  };
+
+  const updateUI = () => {
+    const s = document.getElementById('ct-score');
+    const l = document.getElementById('ct-lives');
+    const lv = document.getElementById('ct-level');
+    const c = document.getElementById('ct-combo');
+    if (s) s.textContent = score;
+    if (l) l.textContent = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0,3-lives));
+    if (lv) lv.textContent = level;
+    if (c) c.textContent = `x${combo}`;
+  };
+
+  const endGame = () => {
+    running = false;
+    clearInterval(spawnTimer);
+    Audio.play.gameover();
+    const best = Utils.getLS('catch_best', 0);
+    if (score > best) Utils.setLS('catch_best', score);
+    setTimeout(() => Utils.showPopup({
+      emoji:'😢', title:'Game Over!',
+      msg:'Nyawamu habis! Coba lagi!',
+      score:`⭐ Score: ${score}`, onPlayAgain: startGame
+    }), 300);
+  };
+
+  const init = () => {
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    canvas = document.getElementById('catch-canvas');
+    ctx = canvas.getContext('2d');
+    running = false; objects = [];
+    // Draw initial
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.font = '3rem serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🍎', canvas.width/2, canvas.height/2 - 30);
+    ctx.font = 'bold 18px Nunito'; ctx.fillStyle = 'rgba(80,60,120,0.8)';
+    ctx.fillText('Klik Mulai untuk bermain!', canvas.width/2, canvas.height/2 + 30);
+  };
+
+  const destroy = () => {
+    running = false;
+    clearInterval(spawnTimer);
+    clearInterval(interval);
+    canvas = null; ctx = null;
+  };
+
+  return { init, destroy };
+})();
+// ===== BALLOON POP =====
+const BalloonPop = (() => {
+  let score, combo, lives, timeLeft, timer, spawnTimer, running, level;
+  const BALLOONS = ['🎈','🎀','🎊','🌸','⭐','🦋','🌈','💫'];
+  const BAD_BALLOONS = ['💣','☠️'];
+  const COLORS = ['#ff6b9d','#c084fc','#38bdf8','#4ade80','#fbbf24','#fb923c','#f87171','#a78bfa'];
+
+  const render = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">🎈 Balloon Pop</h2>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">⭐ Score</div><div class="stat-val" id="bp-score">0</div></div>
+        <div class="stat-box"><div class="stat-label">🔥 Combo</div><div class="stat-val" id="bp-combo">x1</div></div>
+        <div class="stat-box"><div class="stat-label">⏱ Waktu</div><div class="stat-val" id="bp-time">30</div></div>
+        <div class="stat-box"><div class="stat-label">⚡ Level</div><div class="stat-val" id="bp-level">1</div></div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="bp-timerbar" style="width:100%"></div></div>
+      <div id="balloon-area"></div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="btn-primary" id="bp-start">▶️ Mulai</button>
+        <button class="btn-secondary" id="bp-restart" style="margin-left:8px;">🔄 Restart</button>
+      </div>
+    `;
+
+    wrap.querySelector('#bp-start').addEventListener('click', startGame);
+    wrap.querySelector('#bp-restart').addEventListener('click', startGame);
+    return wrap;
+  };
+
+  const startGame = () => {
+    score = 0; combo = 1; timeLeft = 30; level = 1; running = true;
+    clearInterval(timer); clearInterval(spawnTimer);
+    Utils.hidePopup();
+    const area = document.getElementById('balloon-area');
+    if (area) area.innerHTML = '';
+    updateUI();
+
+    timer = setInterval(() => {
+      timeLeft--;
+      const bar = document.getElementById('bp-timerbar');
+      const tEl = document.getElementById('bp-time');
+      if (tEl) tEl.textContent = timeLeft;
+      if (bar) bar.style.width = (timeLeft/30*100)+'%';
+      if (timeLeft <= 10) level = 3;
+      else if (timeLeft <= 20) level = 2;
+      if (timeLeft <= 0) endGame();
+    }, 1000);
+
+    spawnBalloon();
+    spawnTimer = setInterval(spawnBalloon, 800);
+  };
+
+  const spawnBalloon = () => {
+    if (!running) return;
+    const area = document.getElementById('balloon-area');
+    if (!area) return;
+
+    const isBad = Math.random() < 0.15;
+    const emoji = isBad ? BAD_BALLOONS[Utils.rand(0,1)] : BALLOONS[Utils.rand(0,BALLOONS.length-1)];
+    const el = document.createElement('div');
+    el.className = 'balloon';
+    const dur = Math.max(1.5, 4 - level*0.8 + Math.random());
+    el.style.cssText = `left:${Utils.rand(5,85)}%;--rise-dur:${dur}s;font-size:${Utils.rand(26,42)}px;`;
+    el.textContent = emoji;
+    el.dataset.bad = isBad;
+
+    el.addEventListener('click', () => popBalloon(el, isBad));
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); popBalloon(el, isBad); }, {passive:false});
+    area.appendChild(el);
+
+    // Auto remove
+    el.addEventListener('animationend', () => {
+      if (!el.classList.contains('popping')) {
+        if (!isBad) { combo = 1; updateUI(); }
+        el.remove();
+      }
+    });
+  };
+
+  const popBalloon = (el, isBad) => {
+    if (el.classList.contains('popping') || !running) return;
+    el.classList.add('popping');
+    if (isBad) {
+      Audio.play.bomb();
+      combo = 1;
+      showFloat(el, '-5', '#f87171');
+    } else {
+      Audio.play.pop();
+      const pts = combo;
+      score += pts; combo++;
+      showFloat(el, `+${pts}`, '#4ade80');
+    }
+    updateUI();
+    setTimeout(() => el.remove(), 300);
+  };
+
+  const showFloat = (el, txt, color) => {
+    const float = document.createElement('div');
+    float.textContent = txt;
+    float.style.cssText = `
+      position:absolute; left:${el.style.left}; bottom:${el.style.bottom||'50%'};
+      color:${color}; font-family:'Fredoka One',cursive; font-size:1.3rem;
+      pointer-events:none; z-index:10; animation:floatRand 0.8s ease forwards;
+      font-weight:900; text-shadow:1px 1px 0 rgba(0,0,0,.2);
+    `;
+    const area = document.getElementById('balloon-area');
+    if (area) { area.appendChild(float); setTimeout(()=>float.remove(),800); }
+  };
+
+  const updateUI = () => {
+    const s=document.getElementById('bp-score');
+    const c=document.getElementById('bp-combo');
+    const l=document.getElementById('bp-level');
+    if(s) s.textContent=score;
+    if(c) c.textContent=`x${combo}`;
+    if(l) l.textContent=level;
+  };
+
+  const endGame = () => {
+    running = false;
+    clearInterval(timer); clearInterval(spawnTimer);
+    const area = document.getElementById('balloon-area');
+    if (area) area.innerHTML = '';
+    Audio.play.win();
+    const best = Utils.getLS('balloon_best',0);
+    if (score > best) Utils.setLS('balloon_best', score);
+    Utils.confetti();
+    Utils.showPopup({
+      emoji:'🎈', title:'Waktu Habis!',
+      msg:'Permainan selesai!',
+      score:`⭐ Score: ${score} | 🏆 Best: ${Math.max(score,best)}`,
+      confetti: true, onPlayAgain: startGame
+    });
+  };
+
+  const init = () => {
+    score=0; combo=1; timeLeft=30; running=false; level=1;
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+  };
+
+  const destroy = () => {
+    clearInterval(timer); clearInterval(spawnTimer); running=false;
+  };
+
+  return { init, destroy };
+})();
+// ===== MATH QUIZ KIDS =====
+const MathQuiz = (() => {
+  let score, lives, question, correctAns, timer, timeLeft, level, streak, answered;
+
+  const LEVELS = {
+    easy: { max:10, ops:['+','-'], time:20 },
+    medium: { max:20, ops:['+','-','×'], time:15 },
+    hard: { max:50, ops:['+','-','×','÷'], time:10 }
+  };
+  let levelKey = 'easy';
+
+  const render = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">➕ Math Quiz Kids</h2>
+      <div class="level-select">
+        <button class="level-btn ${levelKey==='easy'?'active':''}" data-l="easy">😊 Mudah</button>
+        <button class="level-btn ${levelKey==='medium'?'active':''}" data-l="medium">😎 Sedang</button>
+        <button class="level-btn ${levelKey==='hard'?'active':''}" data-l="hard">🔥 Sulit</button>
+      </div>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">⭐ Score</div><div class="stat-val" id="mq-score">0</div></div>
+        <div class="stat-box"><div class="stat-label">❤️ Nyawa</div><div class="stat-val" id="mq-lives">3</div></div>
+        <div class="stat-box"><div class="stat-label">⏱ Waktu</div><div class="stat-val" id="mq-time">--</div></div>
+        <div class="stat-box"><div class="stat-label">🔥 Streak</div><div class="stat-val" id="mq-streak">0</div></div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="mq-timerbar" style="width:100%"></div></div>
+      <div class="math-question" id="mq-question">Siap?</div>
+      <div class="math-options" id="mq-options"></div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="btn-secondary" id="mq-restart">🔄 Restart</button>
+      </div>
+    `;
+
+    wrap.querySelectorAll('.level-btn').forEach(b => b.addEventListener('click', () => {
+      levelKey = b.dataset.l; init();
+    }));
+    wrap.querySelector('#mq-restart').addEventListener('click', init);
+    return wrap;
+  };
+
+  const makeQuestion = () => {
+    const cfg = LEVELS[levelKey];
+    const op = cfg.ops[Utils.rand(0, cfg.ops.length-1)];
+    let a, b, ans;
+
+    if (op === '+') {
+      a = Utils.rand(1, cfg.max); b = Utils.rand(1, cfg.max); ans = a+b;
+    } else if (op === '-') {
+      a = Utils.rand(2, cfg.max); b = Utils.rand(1, a); ans = a-b;
+    } else if (op === '×') {
+      a = Utils.rand(2, Math.min(12, cfg.max/2)); b = Utils.rand(2, Math.min(12, cfg.max/2)); ans = a*b;
+    } else {
+      b = Utils.rand(2, 10); ans = Utils.rand(2, 10); a = b*ans;
+    }
+
+    question = `${a} ${op} ${b} = ?`;
+    correctAns = ans;
+
+    // Generate wrong answers
+    const wrongs = new Set();
+    while (wrongs.size < 3) {
+      const w = ans + Utils.rand(-Math.max(3,Math.floor(ans*0.3)), Math.max(3,Math.floor(ans*0.3)));
+      if (w !== ans && w >= 0) wrongs.add(w);
+    }
+    return Utils.shuffle([ans, ...wrongs]);
+  };
+
+  const nextQuestion = () => {
+    answered = false;
+    clearInterval(timer);
+    const opts = makeQuestion();
+    const cfg = LEVELS[levelKey];
+    timeLeft = cfg.time;
+
+    const qEl = document.getElementById('mq-question');
+    const oEl = document.getElementById('mq-options');
+    if (!qEl || !oEl) return;
+
+    qEl.textContent = question;
+    qEl.style.animation = 'none'; void qEl.offsetWidth; qEl.style.animation='';
+
+    oEl.innerHTML = '';
+    opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'math-opt';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => checkAnswer(opt, btn));
+      oEl.appendChild(btn);
+    });
+
+    // Timer
+    const timeBar = document.getElementById('mq-timerbar');
+    const timeEl = document.getElementById('mq-time');
+    if (timeEl) timeEl.textContent = timeLeft;
+    if (timeBar) timeBar.style.width = '100%';
+
+    timer = setInterval(() => {
+      timeLeft--;
+      if (timeEl) timeEl.textContent = timeLeft;
+      if (timeBar) timeBar.style.width = (timeLeft/cfg.time*100)+'%';
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        handleWrong();
+      }
+    }, 1000);
+  };
+
+  const checkAnswer = (ans, btn) => {
+    if (answered) return;
+    answered = true;
+    clearInterval(timer);
+
+    const allBtns = document.querySelectorAll('.math-opt');
+    allBtns.forEach(b => {
+      if (parseInt(b.textContent) === correctAns) b.classList.add('correct');
+    });
+
+    if (ans === correctAns) {
+      btn.classList.add('correct');
+      streak++;
+      const bonus = Math.floor(streak/3);
+      score += 10 + bonus*5;
+      Audio.play.correct();
+      updateUI();
+      setTimeout(nextQuestion, 800);
+    } else {
+      btn.classList.add('wrong');
+      Audio.play.wrong();
+      handleWrong();
+    }
+  };
+
+  const handleWrong = () => {
+    if (answered && document.querySelectorAll('.math-opt.wrong').length === 0) return;
+    streak = 0; lives--;
+    updateUI();
+    if (lives <= 0) {
+      Audio.play.gameover();
+      const best = Utils.getLS('math_best_'+levelKey, 0);
+      if (score > best) Utils.setLS('math_best_'+levelKey, score);
+      setTimeout(() => Utils.showPopup({
+        emoji:'🧮', title:'Game Over!',
+        msg:'Nyawa habis! Semangat belajar!',
+        score:`⭐ Score: ${score} | 🏆 Best: ${Math.max(score,best)}`,
+        onPlayAgain: init
+      }), 600);
+    } else {
+      setTimeout(nextQuestion, 900);
+    }
+  };
+
+  const updateUI = () => {
+    const s=document.getElementById('mq-score');
+    const l=document.getElementById('mq-lives');
+    const st=document.getElementById('mq-streak');
+    if(s) s.textContent=score;
+    if(l) l.textContent='❤️'.repeat(lives)+'🖤'.repeat(Math.max(0,3-lives));
+    if(st) st.textContent=streak;
+  };
+
+  const init = () => {
+    score=0; lives=3; streak=0; answered=false;
+    clearInterval(timer);
+    Utils.hidePopup();
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    nextQuestion();
+  };
+
+  const destroy = () => clearInterval(timer);
+  return { init, destroy };
+})();
+// ===== DINO RUN =====
+const DinoRun = (() => {
+  let canvas, ctx, dino, obstacles, score, highScore, speed, running, raf, frameCount;
+  const GROUND = 0.78;
+
+  const render = () => {
+    const isMobile = window.innerWidth < 600;
+    const W = isMobile ? Math.min(window.innerWidth - 64, 360) : 600;
+    const H = Math.round(W * 0.4);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">🦖 Dino Run</h2>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">⭐ Score</div><div class="stat-val" id="dr-score">0</div></div>
+        <div class="stat-box"><div class="stat-label">🏆 Best</div><div class="stat-val" id="dr-best">${Utils.getLS('dino_best',0)}</div></div>
+        <div class="stat-box"><div class="stat-label">⚡ Speed</div><div class="stat-val" id="dr-speed">1</div></div>
+      </div>
+      <canvas id="dino-canvas" width="${W}" height="${H}"></canvas>
+      <p style="text-align:center;font-size:.85rem;color:var(--text-mid);font-weight:700;margin-top:8px;">
+        ⬆️ Panah Atas / Spasi / Ketuk Layar untuk melompat!
+      </p>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn-primary" id="dr-jump">⬆️ Lompat!</button>
+        <button class="btn-secondary" id="dr-restart" style="margin-left:8px;">🔄 Restart</button>
+      </div>
+    `;
+
+    wrap.querySelector('#dr-jump').addEventListener('click', jump);
+    wrap.querySelector('#dr-restart').addEventListener('click', startGame);
+    return wrap;
+  };
+
+  const W = () => canvas ? canvas.width : 600;
+  const H = () => canvas ? canvas.height : 240;
+  const GROUND_Y = () => H() * GROUND;
+
+  const jump = () => {
+    if (!running) { startGame(); return; }
+    if (dino && dino.onGround) {
+      dino.vy = -12; dino.onGround = false;
+      Audio.play.jump();
+    }
+  };
+
+  const startGame = () => {
+    if (!canvas) return;
+    running = true; score = 0; speed = 4; frameCount = 0;
+    highScore = Utils.getLS('dino_best', 0);
+    dino = { x: W()*0.12, y: GROUND_Y()-48, w:36, h:48, vy:0, onGround:true, frame:0 };
+    obstacles = [];
+    Utils.hidePopup();
+    updateUI();
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(gameLoop);
+  };
+
+  const spawnObstacle = () => {
+    const types = [
+      { emoji:'🌵', w:28, h:40 },
+      { emoji:'🪨', w:32, h:28 },
+      { emoji:'🌵', w:24, h:50 },
+    ];
+    const t = types[Utils.rand(0,2)];
+    obstacles.push({ x: W()+20, y: GROUND_Y()-t.h, ...t });
+    // Sometimes double
+    if (Math.random() < 0.3) {
+      obstacles.push({ x: W()+20+Utils.rand(60,100), y: GROUND_Y()-t.h, ...t });
+    }
+  };
+
+  const gameLoop = () => {
+    if (!running || !canvas) return;
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    ctx.clearRect(0,0,W(),H());
+
+    // Ground
+    ctx.fillStyle = dark ? '#2d4a2d' : '#90ee90';
+    ctx.fillRect(0, GROUND_Y()+2, W(), H()-GROUND_Y()-2);
+    ctx.fillStyle = dark ? '#1a3a1a' : '#228b22';
+    ctx.fillRect(0, GROUND_Y()+2, W(), 4);
+
+    // Dino
+    ctx.font = `${dino.h*0.9}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.shadowColor = '#4ade80'; ctx.shadowBlur = dino.onGround ? 0 : 10;
+    ctx.fillText('🦖', dino.x + dino.w/2, dino.y + dino.h);
+    ctx.shadowBlur = 0;
+
+    // Physics
+    if (!dino.onGround) {
+      dino.vy += 0.6;
+      dino.y += dino.vy;
+      if (dino.y >= GROUND_Y() - dino.h) {
+        dino.y = GROUND_Y() - dino.h; dino.vy = 0; dino.onGround = true;
+      }
+    }
+
+    // Obstacles
+    frameCount++;
+    if (frameCount % Math.max(40, 80 - Math.floor(score/10)*3) === 0) spawnObstacle();
+
+    obstacles.forEach(obs => {
+      obs.x -= speed;
+      ctx.font = `${obs.h}px serif`;
+      ctx.fillText(obs.emoji, obs.x, obs.y + obs.h);
+
+      // Collision (tighter box)
+      if (dino.x+8 < obs.x+obs.w-4 && dino.x+dino.w-8 > obs.x+4 &&
+          dino.y+8 < obs.y+obs.h && dino.y+dino.h-4 > obs.y) {
+        gameOver(); return;
+      }
+    });
+    obstacles = obstacles.filter(o => o.x > -60);
+
+    // Score
+    score++;
+    speed = 4 + Math.floor(score/200)*0.5;
+    if (score > highScore) { highScore = score; Utils.setLS('dino_best', highScore); }
+
+    frameCount % 6 === 0 && updateUI();
+    raf = requestAnimationFrame(gameLoop);
+  };
+
+  const updateUI = () => {
+    const s=document.getElementById('dr-score');
+    const b=document.getElementById('dr-best');
+    const sp=document.getElementById('dr-speed');
+    if(s) s.textContent=Math.floor(score/10);
+    if(b) b.textContent=Math.floor(highScore/10);
+    if(sp) sp.textContent=Math.floor(speed-3);
+  };
+
+  const gameOver = () => {
+    running = false;
+    cancelAnimationFrame(raf);
+    Audio.play.gameover();
+    setTimeout(() => Utils.showPopup({
+      emoji:'🦖', title:'Tertabrak!',
+      msg:'Dino menabrak rintangan!',
+      score:`⭐ Score: ${Math.floor(score/10)} | 🏆 Best: ${Math.floor(highScore/10)}`,
+      onPlayAgain: startGame
+    }), 300);
+  };
+
+  const handleKey = (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump(); }
+  };
+
+  const handleTouch = (e) => { e.preventDefault(); jump(); };
+
+  const init = () => {
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    canvas = document.getElementById('dino-canvas');
+    ctx = canvas.getContext('2d');
+    running = false;
+    document.addEventListener('keydown', handleKey);
+    canvas.addEventListener('touchstart', handleTouch, {passive:false});
+
+    // Draw welcome
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    ctx.fillStyle = dark ? '#87ceeb44' : '#87ceeb44';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.font = '60px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🦖', canvas.width/2, canvas.height/2 - 20);
+    ctx.font = 'bold 16px Nunito'; ctx.fillStyle=dark?'#e0e7ff':'#1e1b4b';
+    ctx.fillText('Tekan Lompat untuk mulai!', canvas.width/2, canvas.height*0.85);
+  };
+
+  const destroy = () => {
+    running = false;
+    cancelAnimationFrame(raf);
+    document.removeEventListener('keydown', handleKey);
+    canvas = null; ctx = null;
+  };
+
+  return { init, destroy };
+})();
+// ===== PIANO TILES =====
+const PianoTiles = (() => {
+  const COLS = 4;
+  const TILE_H = 100;
+  const NOTES = [261, 294, 330, 392]; // C D E G
+  const HIT_ZONE = 0.75; // fraction from top
+
+  let score, combo, lives, speed, running, interval, tiles, lastCols, boardH;
+
+  const render = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'game-wrap';
+    wrap.innerHTML = `
+      <h2 class="game-title">🎹 Piano Tiles</h2>
+      <div class="game-stats">
+        <div class="stat-box"><div class="stat-label">⭐ Score</div><div class="stat-val" id="pt-score">0</div></div>
+        <div class="stat-box"><div class="stat-label">🔥 Combo</div><div class="stat-val" id="pt-combo">x1</div></div>
+        <div class="stat-box"><div class="stat-label">❤️ Nyawa</div><div class="stat-val" id="pt-lives">3</div></div>
+        <div class="stat-box"><div class="stat-label">⚡ Speed</div><div class="stat-val" id="pt-speed">1</div></div>
+      </div>
+      <div id="piano-board"></div>
+      <div id="pt-hit-line" style="position:relative;height:4px;background:linear-gradient(90deg,#ff6b9d,#c084fc,#38bdf8);border-radius:2px;margin:4px 0;box-shadow:0 0 12px rgba(255,107,157,.6);"></div>
+      <div style="text-align:center;margin:10px 0;">
+        <button class="btn-primary" id="pt-start">▶️ Mulai</button>
+        <button class="btn-secondary" id="pt-restart" style="margin-left:8px;">🔄 Restart</button>
+      </div>
+      <p style="text-align:center;font-size:.8rem;color:var(--text-mid);font-weight:700;">
+        Klik tile hitam saat mencapai garis merah!
+      </p>
+    `;
+
+    wrap.querySelector('#pt-start').addEventListener('click', startGame);
+    wrap.querySelector('#pt-restart').addEventListener('click', startGame);
+    return wrap;
+  };
+
+  const getBoardEl = () => document.getElementById('piano-board');
+
+  const setupBoard = () => {
+    const board = getBoardEl();
+    if (!board) return;
+    board.innerHTML = '';
+    board.style.cssText = `
+      display:flex; gap:4px; justify-content:center;
+      height:420px; overflow:hidden; position:relative;
+      background:rgba(0,0,0,0.08); border-radius:16px;
+      border:3px solid rgba(255,255,255,.4);
+    `;
+    boardH = board.offsetHeight || 420;
+
+    for (let c = 0; c < COLS; c++) {
+      const col = document.createElement('div');
+      col.id = `pt-col-${c}`;
+      col.style.cssText = `
+        flex:1; position:relative; overflow:hidden;
+        background:rgba(255,255,255,0.05);
+      `;
+      board.appendChild(col);
+    }
+  };
+
+  const spawnTile = () => {
+    // Pick a column different from last (avoid double same col sometimes)
+    let col;
+    const tries = 4;
+    for (let i=0;i<tries;i++){
+      col = Utils.rand(0, COLS-1);
+      if (col !== lastCols[lastCols.length-1] || Math.random()<0.3) break;
+    }
+    lastCols.push(col);
+    if (lastCols.length > 3) lastCols.shift();
+
+    const colEl = document.getElementById(`pt-col-${col}`);
+    if (!colEl) return;
+
+    const tile = document.createElement('div');
+    tile.className = 'piano-tile black-tile';
+    tile.dataset.col = col;
+    tile.dataset.note = col;
+    tile.style.cssText = `top:-${TILE_H}px; height:${TILE_H}px;`;
+
+    tile.addEventListener('click', () => hitTile(tile, col));
+    tile.addEventListener('touchstart', (e) => { e.preventDefault(); hitTile(tile, col); }, {passive:false});
+
+    colEl.appendChild(tile);
+    tiles.push({ el: tile, col, y: -TILE_H, hit: false, missed: false });
+  };
+
+  const hitTile = (tile, col) => {
+    if (!running) return;
+    const tileData = tiles.find(t => t.el === tile && !t.hit && !t.missed);
+    if (!tileData) return;
+    const pct = tileData.y / (boardH - TILE_H);
+    if (pct < 0.3) {
+      // Too early - miss
+      Audio.play.wrong();
+      tileData.missed = true;
+      tile.classList.add('miss-flash');
+      setTimeout(()=>tile.remove(), 200);
+      handleMiss();
+      return;
+    }
+    tileData.hit = true;
+    Audio.play.piano(col);
+    tile.style.background = 'linear-gradient(180deg,#6d28d9,#a855f7)';
+    tile.style.boxShadow = '0 0 24px rgba(168,85,247,.9)';
+    score += combo;
+    combo++;
+    speed = Math.min(8, 2 + Math.floor(score/30)*0.4);
+    updateUI();
+    setTimeout(()=>{ tile.remove(); tiles = tiles.filter(t=>t.el!==tile); }, 150);
+  };
+
+  const handleMiss = () => {
+    combo = 1; lives--;
+    updateUI();
+    if (lives <= 0) endGame();
+  };
+
+  const gameLoop = () => {
+    if (!running) return;
+    const board = getBoardEl();
+    if (!board) return;
+
+    tiles.forEach(tile => {
+      if (tile.hit || tile.missed) return;
+      tile.y += speed;
+      tile.el.style.top = tile.y + 'px';
+
+      // Miss if passed bottom
+      if (tile.y > boardH) {
+        tile.missed = true;
+        tile.el.remove();
+        tiles = tiles.filter(t=>t!==tile);
+        handleMiss();
+      }
+    });
+    tiles = tiles.filter(t=>!t.missed || t.el.parentElement);
+  };
+
+  const updateUI = () => {
+    const s=document.getElementById('pt-score');
+    const c=document.getElementById('pt-combo');
+    const l=document.getElementById('pt-lives');
+    const sp=document.getElementById('pt-speed');
+    if(s) s.textContent=score;
+    if(c) c.textContent=`x${combo}`;
+    if(l) l.textContent='❤️'.repeat(lives)+'🖤'.repeat(Math.max(0,3-lives));
+    if(sp) sp.textContent=Math.ceil(speed-1);
+  };
+
+  const endGame = () => {
+    running = false;
+    clearInterval(interval);
+    Audio.play.gameover();
+    const best = Utils.getLS('piano_best',0);
+    if (score > best) Utils.setLS('piano_best', score);
+    setTimeout(()=>Utils.showPopup({
+      emoji:'🎹', title:'Game Over!',
+      msg:'Tile terlewat!',
+      score:`⭐ Score: ${score} | 🏆 Best: ${Math.max(score,best)}`,
+      onPlayAgain: startGame
+    }),400);
+  };
+
+  const startGame = () => {
+    score=0; combo=1; lives=3; speed=2; running=true; tiles=[]; lastCols=[];
+    clearInterval(interval);
+    Utils.hidePopup();
+    setupBoard();
+    updateUI();
+
+    let spawnCount = 0;
+    interval = setInterval(() => {
+      if (!running) return;
+      gameLoop();
+      spawnCount++;
+      const spawnEvery = Math.max(8, 20 - Math.floor(score/30)*2);
+      if (spawnCount % spawnEvery === 0) spawnTile();
+    }, 30);
+    spawnTile();
+  };
+
+  const init = () => {
+    score=0; combo=1; lives=3; speed=2; running=false; tiles=[]; lastCols=[];
+    const container = document.getElementById('game-container');
+    container.innerHTML = '';
+    container.appendChild(render());
+    setupBoard();
+  };
+
+  const destroy = () => { clearInterval(interval); running=false; tiles=[]; };
+  return { init, destroy };
+})();
+// ===== MAIN APP CONTROLLER =====
+const App = (() => {
+  const GAMES = {
+    memory:     { module: MemoryGame,  name: 'Memory Game' },
+    tictactoe:  { module: TicTacToe,   name: 'Tic Tac Toe' },
+    tebakangka: { module: TebakAngka,  name: 'Tebak Angka' },
+    rps:        { module: RPS,         name: 'Rock Paper Scissors' },
+    snake:      { module: SnakeGame,   name: 'Snake Game' },
+    catch:      { module: CatchGame,   name: 'Catch The Object' },
+    balloon:    { module: BalloonPop,  name: 'Balloon Pop' },
+    math:       { module: MathQuiz,    name: 'Math Quiz Kids' },
+    dino:       { module: DinoRun,     name: 'Dino Run' },
+    piano:      { module: PianoTiles,  name: 'Piano Tiles' }
+  };
+
+  let currentGame = null;
+  let isDark = false;
+
+  const showPage = (id) => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  };
+
+  const openGame = (key) => {
+    const game = GAMES[key];
+    if (!game) return;
+    if (currentGame) {
+      try { GAMES[currentGame].module.destroy(); } catch(e){}
+    }
+    currentGame = key;
+    Audio.play.click();
+    Utils.hidePopup();
+    document.getElementById('game-container').innerHTML = '';
+    showPage('page-game');
+    try { game.module.init(); } catch(e){ console.error(e); }
+  };
+
+  const goHome = () => {
+    if (currentGame) {
+      try { GAMES[currentGame].module.destroy(); } catch(e){}
+      currentGame = null;
+    }
+    Utils.hidePopup();
+    showPage('page-home');
+    Audio.play.click();
+  };
+
+  const toggleDark = () => {
+    isDark = !isDark;
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+    document.getElementById('dark-mode-btn').textContent = isDark ? '☀️' : '🌙';
+    Utils.setLS('mgk_dark', isDark);
+  };
+
+  const initEvents = () => {
+    // Game cards
+    document.querySelectorAll('.game-card').forEach(card => {
+      card.addEventListener('click', () => openGame(card.dataset.game));
+    });
+
+    // Back button
+    document.getElementById('back-btn').addEventListener('click', goHome);
+
+    // Dark mode
+    document.getElementById('dark-mode-btn').addEventListener('click', toggleDark);
+
+    // Mute
+    const muteBtn = document.getElementById('mute-btn');
+    muteBtn.addEventListener('click', () => {
+      const muted = Audio.toggleMute();
+      muteBtn.textContent = muted ? '🔇' : '🔊';
+    });
+
+    // Popup buttons
+    document.getElementById('popup-play-again').addEventListener('click', () => {
+      Utils.hidePopup();
+      if (currentGame) {
+        const cb = document.getElementById('popup-play-again')._cb;
+        if (cb) { cb(); return; }
+        try { GAMES[currentGame].module.init(); } catch(e){}
+      }
+    });
+
+    document.getElementById('popup-home').addEventListener('click', () => {
+      const cb = document.getElementById('popup-home')._cb;
+      if (cb) { cb(); } else { goHome(); }
+    });
+
+    // Keyboard ESC to go home
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && currentGame) goHome();
+    });
+  };
+
+  const initLoading = () => {
+    setTimeout(() => {
+      const ls = document.getElementById('loading-screen');
+      const app = document.getElementById('app');
+      ls.style.transition = 'opacity 0.6s ease';
+      ls.style.opacity = '0';
+      setTimeout(() => {
+        ls.style.display = 'none';
+        app.classList.remove('hidden');
+        // Start BG music
+        setTimeout(() => Audio.play.bg(), 800);
+      }, 600);
+    }, 2800);
+  };
+
+  const init = () => {
+    // Load saved preferences
+    isDark = Utils.getLS('mgk_dark', false);
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('dark-mode-btn').textContent = '☀️';
+    }
+
+    const muted = Audio.init();
+    document.getElementById('mute-btn').textContent = muted ? '🔇' : '🔊';
+
+    initEvents();
+    initLoading();
+  };
+
+  return { init };
+})();
+
+// Start app
+document.addEventListener('DOMContentLoaded', App.init);
+</script></body></html>
